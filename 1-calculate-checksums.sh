@@ -73,13 +73,20 @@ file_number=0;
 # based on https://stackoverflow.com/a/9612560
 find "$input_directory" -type f -name "*" -print0 | while read -d $'\0' file
 do
-    if [ $file_number -eq 5 ]; then
-        exit;
+    if [ $file_number -eq 2 ]; then
+        break;
     fi
 
     echo "$file_number: $file";
-    checksum=$(sha1sum "$file");
-    echo "checksum: $checksum";
-    echo $checksum >> "$output_file";
+    checksum_result=$(sha1sum "$file");
+ #   checksum=$(echo "$checksum_result" | awk '{print $1}');
+ #   echo "checksum: $checksum";
+    if grep "$checksum_result" "$output_file"; then
+        echo "found $checksum_result";
+    else
+        echo "not found $checksum_result";
+        echo "$checksum_result" >> "$output_file";
+    fi
+
     let file_number=$file_number+1;
 done
