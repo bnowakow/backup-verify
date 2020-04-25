@@ -77,8 +77,10 @@ file_number=0;
 # based on https://stackoverflow.com/a/9612560
 find "$input_directory" -type f -name "*" -print0 | while read -d $'\0' file
 do
-    if [ $file_number -eq 3000 ]; then
-        break;
+    if [ "$test" = "y" ]; then
+        if [ $file_number -eq 3000 ]; then
+            break;
+        fi
     fi
     
     if [ $(($file_number % 1000)) == 0 ]; then
