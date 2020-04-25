@@ -31,7 +31,7 @@ fi
 # read getopt’s output this way to handle the quoting right:
 eval set -- "$PARSED"
 
-v=n outFile=- test=n
+v=n output_file=- test=n
 # now enjoy the options in order and nicely split until we see --
 while true; do
     case "$1" in
@@ -44,7 +44,7 @@ while true; do
             shift
             ;;
         -o|--output)
-            outFile="$2"
+            output_file="$2"
             shift 2
             ;;
         --)
@@ -67,16 +67,19 @@ fi
 
 input_directory=$1;
 
-echo "verbose: $v, test: $test, directory: $input_directory, out: $outFile"
+echo "verbose: $v, test: $test, directory: $input_directory, out: $output_file"
 
 file_number=0;
 # based on https://stackoverflow.com/a/9612560
 find "$input_directory" -type f -name "*" -print0 | while read -d $'\0' file
 do
-    echo "$file_number: $file"
     if [ $file_number -eq 5 ]; then
         exit;
     fi
- 
+
+    echo "$file_number: $file";
+    checksum=$(sha1sum "$file");
+    echo "checksum: $checksum";
+    echo $checksum >> "$output_file";
     let file_number=$file_number+1;
 done
