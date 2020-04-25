@@ -77,7 +77,7 @@ file_number=0;
 # based on https://stackoverflow.com/a/9612560
 find "$input_directory" -type f -name "*" -print0 | while read -d $'\0' file
 do
-    if [ $file_number -eq 2 ]; then
+    if [ $file_number -eq 3000 ]; then
         break;
     fi
     
@@ -85,24 +85,26 @@ do
         date=$(date);
         echo -e "$date \t checked $file_number files";
     fi
+
+    let file_number=$file_number+1;
+
     if [ "$v" = "y" ]; then
         echo "$file";
     fi
-    checksum_result=$(sha1sum "$file");
-    #checksum=$(echo "$checksum_result" | awk '{print $1}');
+
     if [ "$v" = "y" ]; then
         echo -n -e '\t';
     fi
-    if grep -q "$checksum_result" "$output_file"; then
+    if grep -q "$file" "$output_file"; then
         if [ "$v" = "y" ]; then
-            echo "found $checksum_result";
+            echo "already checked";
         fi
     else
         if [ "$v" = "y" ]; then
-            echo "not found $checksum_result";
+            echo "not found";
         fi
+        checksum_result=$(sha1sum "$file");
+        #checksum=$(echo "$checksum_result" | awk '{print $1}');
         echo "$checksum_result" >> "$output_file";
     fi
-
-    let file_number=$file_number+1;
 done
