@@ -61,6 +61,12 @@ if [[ $# -ne 1 ]]; then
     exit 4
 fi
 
-echo "verbose: $v, directory: $1, out: $outFile"
+input_directory=$1;
 
+echo "verbose: $v, directory: $input_directory, out: $outFile"
 
+# based on https://stackoverflow.com/a/9612560
+find "$input_directory" -name "*" -print0 | while read -d $'\0' file
+do
+    echo "$file"
+done
