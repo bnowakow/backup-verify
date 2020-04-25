@@ -71,7 +71,7 @@ echo "verbose: $v, test: $test, directory: $input_directory, out: $outFile"
 
 file_number=0;
 # based on https://stackoverflow.com/a/9612560
-find "$input_directory" -name "*" -print0 | while read -d $'\0' file
+find "$input_directory" -type f -name "*" -print0 | while read -d $'\0' file
 do
     echo "$file_number: $file"
     if [ $file_number -eq 5 ]; then
