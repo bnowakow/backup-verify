@@ -15,8 +15,8 @@ if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
     exit 1
 fi
 
-OPTIONS=dfo:v
-LONGOPTS=debug,force,output:,verbose
+OPTIONS=o:v
+LONGOPTS=output:,verbose
 
 # -regarding ! and PIPESTATUS see above
 # -temporarily store output to be able to check for errors
@@ -31,18 +31,10 @@ fi
 # read getopt’s output this way to handle the quoting right:
 eval set -- "$PARSED"
 
-d=n f=n v=n outFile=-
+v=n outFile=-
 # now enjoy the options in order and nicely split until we see --
 while true; do
     case "$1" in
-        -d|--debug)
-            d=y
-            shift
-            ;;
-        -f|--force)
-            f=y
-            shift
-            ;;
         -v|--verbose)
             v=y
             shift
@@ -64,10 +56,11 @@ done
 
 # handle non-option arguments
 if [[ $# -ne 1 ]]; then
-    echo "$0: A single input file is required."
+    # TODO add support for multiple directories
+    echo "$0: A single input directory is required."
     exit 4
 fi
 
-echo "verbose: $v, force: $f, debug: $d, in: $1, out: $outFile"
+echo "verbose: $v, directory: $1, out: $outFile"
 
 
