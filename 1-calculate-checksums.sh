@@ -69,6 +69,10 @@ input_directory=$1;
 
 echo "verbose: $v, test: $test, directory: $input_directory, out: $output_file"
 
+if [ ! -f "$output_file" ]; then
+    touch "$output_file";
+fi 
+
 file_number=0;
 # based on https://stackoverflow.com/a/9612560
 find "$input_directory" -type f -name "*" -print0 | while read -d $'\0' file
@@ -76,15 +80,27 @@ do
     if [ $file_number -eq 2 ]; then
         break;
     fi
-
-    echo "$file_number: $file";
+    
+    if [ $(($file_number % 1000)) == 0 ]; then
+        date=$(date);
+        echo -e "$date \t checked $file_number files";
+    fi
+    if [ "$v" = "y" ]; then
+        echo "$file";
+    fi
     checksum_result=$(sha1sum "$file");
- #   checksum=$(echo "$checksum_result" | awk '{print $1}');
- #   echo "checksum: $checksum";
-    if grep "$checksum_result" "$output_file"; then
-        echo "found $checksum_result";
+    #checksum=$(echo "$checksum_result" | awk '{print $1}');
+    if [ "$v" = "y" ]; then
+        echo -n -e '\t';
+    fi
+    if grep -q "$checksum_result" "$output_file"; then
+        if [ "$v" = "y" ]; then
+            echo "found $checksum_result";
+        fi
     else
-        echo "not found $checksum_result";
+        if [ "$v" = "y" ]; then
+            echo "not found $checksum_result";
+        fi
         echo "$checksum_result" >> "$output_file";
     fi
 
