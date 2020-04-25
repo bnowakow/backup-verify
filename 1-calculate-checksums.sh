@@ -15,8 +15,8 @@ if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
     exit 1
 fi
 
-OPTIONS=o:v
-LONGOPTS=output:,verbose
+OPTIONS=o:v,t
+LONGOPTS=output:,verbose,test
 
 # -regarding ! and PIPESTATUS see above
 # -temporarily store output to be able to check for errors
@@ -31,12 +31,16 @@ fi
 # read getopt’s output this way to handle the quoting right:
 eval set -- "$PARSED"
 
-v=n outFile=-
+v=n outFile=- test=n
 # now enjoy the options in order and nicely split until we see --
 while true; do
     case "$1" in
         -v|--verbose)
             v=y
+            shift
+            ;;
+        -t|--test)
+            test=y
             shift
             ;;
         -o|--output)
@@ -63,10 +67,16 @@ fi
 
 input_directory=$1;
 
-echo "verbose: $v, directory: $input_directory, out: $outFile"
+echo "verbose: $v, test: $test, directory: $input_directory, out: $outFile"
 
+file_number=0;
 # based on https://stackoverflow.com/a/9612560
 find "$input_directory" -name "*" -print0 | while read -d $'\0' file
 do
-    echo "$file"
+    echo "$file_number: $file"
+    if [ $file_number -eq 5 ]; then
+        exit;
+    fi
+ 
+    let file_number=$file_number+1;
 done
