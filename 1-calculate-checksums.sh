@@ -15,8 +15,8 @@ if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
     exit 1
 fi
 
-OPTIONS=o:v,t
-LONGOPTS=output:,verbose,test
+OPTIONS=o:s:v,t
+LONGOPTS=output:,skip:,verbose,test
 
 # -regarding ! and PIPESTATUS see above
 # -temporarily store output to be able to check for errors
@@ -31,7 +31,7 @@ fi
 # read getopt’s output this way to handle the quoting right:
 eval set -- "$PARSED"
 
-v=n output_file=- test=n
+v=n output_file=- test=n skip=0
 # now enjoy the options in order and nicely split until we see --
 while true; do
     case "$1" in
@@ -45,6 +45,10 @@ while true; do
             ;;
         -o|--output)
             output_file="$2"
+            shift 2
+            ;;
+        -s|--skip)
+            skip="$2"
             shift 2
             ;;
         --)
@@ -83,12 +87,17 @@ do
         fi
     fi
     
+    if [ $file_number -lt $skip ]; then
+        let file_number=$file_number+1;
+        continue;
+    fi
+    
     if [ $(($file_number % 1000)) == 0 ]; then
         date=$(date);
         echo -e "$date \t checked $file_number files";
     fi
-
     let file_number=$file_number+1;
+
 
     if [ "$v" = "y" ]; then
         echo "$file";
@@ -97,16 +106,8 @@ do
     if [ "$v" = "y" ]; then
         echo -n -e '\t';
     fi
-    if grep -q "$file" "$output_file"; then
-        if [ "$v" = "y" ]; then
-            echo "already checked";
-        fi
-    else
-        if [ "$v" = "y" ]; then
-            echo "not found";
-        fi
-        checksum_result=$(sha1sum "$file");
-        #checksum=$(echo "$checksum_result" | awk '{print $1}');
-        echo "$checksum_result" >> "$output_file";
-    fi
+    
+    checksum_result=$(sha1sum "$file");
+    #checksum=$(echo "$checksum_result" | awk '{print $1}');
+    echo "$checksum_result" >> "$output_file";
 done
