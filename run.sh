@@ -9,5 +9,4 @@ sudo ./1-calculate-checksums.sh /Volumes/bigi1/CCC-TimeMachine-Taerar3 --output 
 sudo ./1-calculate-checksums.sh /Volumes/Archive/Taerar4 --output t4-checksums-source --skip 721000
 sudo ./1-calculate-checksums.sh /Volumes/bigi1/CCC-TimeMachine-Taerar4 --output t4-checksums-destination --skip 1127000
 
-./2-verify-checksums.sh -v -s finished1/t2-checksums-destination -d finished1/t2-checksums-destination -p finished1/t2-checksums-verification
-
+./2-verify-checksums.sh --source copies/t3-checksums-source-copy --destination finished1/t3t2t4-checksums-destination-combined --progress finished1/t3-copy-verification

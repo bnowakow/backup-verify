@@ -78,21 +78,26 @@ file_number=0;
 
 while read -r line
 do
+
+    if [ $(($file_number % 1000)) == 0 ]; then
+        date=$(date);
+        echo -e "$date \t checked $file_number files";
+    fi
+
     checksum=$(echo "$line" | awk '{print $1}');
     file=$(echo "$line" | awk '{print $2}');
     
-    if grep -q "$checksum" "$destination_checksums"; then
+    if result=$(grep "$checksum" "$destination_checksums"); then
         echo "$checksum exists" >> "$progress_file"
         if [ "$v" = "y" ]; then
-            echo "$checksum exists";
+            file_found=$(echo $result | awk '{print $2}');
+            echo "$file_number: $checksum of $file exists in $file_found";
         fi
     else
-        echo "$checksum doesnt_exist" >> "$progress_file"
-        >&2 echo "$checksum doesnt_exist"
+        echo "$checksum MISSING" >> "$progress_file"
+        >&2 echo "$file_number: $checksum of $file is MISSING"
     fi
 
-    
     let file_number=$file_number+1;
-    exit;
 done < "$source_checksums"
 
