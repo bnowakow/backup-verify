@@ -88,6 +88,10 @@ do
     fi
     
     if [ $file_number -lt $skip ]; then
+        if [ "$v" = "y" ]; then
+            echo "skipping $file_number: $file"; 
+        fi
+
         let file_number=$file_number+1;
         continue;
     fi

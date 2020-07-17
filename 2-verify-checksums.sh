@@ -76,4 +76,23 @@ fi
 echo "verbose: $v, test: $test, source_checksums=$source_checksums destination_checksums=$destination_checksums progress_file=$progress_file";
 file_number=0;
 
+while read -r line
+do
+    checksum=$(echo "$line" | awk '{print $1}');
+    file=$(echo "$line" | awk '{print $2}');
+    
+    if grep -q "$checksum" "$destination_checksums"; then
+        echo "$checksum exists" >> "$progress_file"
+        if [ "$v" = "y" ]; then
+            echo "$checksum exists";
+        fi
+    else
+        echo "$checksum doesnt_exist" >> "$progress_file"
+        >&2 echo "$checksum doesnt_exist"
+    fi
+
+    
+    let file_number=$file_number+1;
+    exit;
+done < "$source_checksums"
 
