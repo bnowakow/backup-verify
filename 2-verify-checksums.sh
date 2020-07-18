@@ -15,8 +15,8 @@ if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
     exit 1
 fi
 
-OPTIONS=s:,d:,p:,v,t
-LONGOPTS=source:,destination:,progress:,verbose,test
+OPTIONS=s:,d:,p:,v
+LONGOPTS=source:,destination:,progress:,verbose,skip:
 
 # -regarding ! and PIPESTATUS see above
 # -temporarily store output to be able to check for errors
@@ -32,7 +32,7 @@ fi
 # read getopt’s output this way to handle the quoting right:
 eval set -- "$PARSED"
 
-v=n test=n source_checksums=- destination_checksums=- progress_file=-
+v=n test=n source_checksums=- destination_checksums=- progress_file=- skip=0
 # now enjoy the options in order and nicely split until we see --
 while true; do
     case "$1" in
@@ -56,6 +56,10 @@ while true; do
             progress_file="$2"
             shift 2
             ;;
+        --skip)
+            skip="$2"
+            shift 2;
+            ;;
         --)
             shift
             break
@@ -73,11 +77,20 @@ if [ "-" == "$source_checksums" ] || [ "-" == "$destination_checksums" ] || [ "-
   exit
 fi
 
-echo "verbose: $v, test: $test, source_checksums=$source_checksums destination_checksums=$destination_checksums progress_file=$progress_file";
+echo "verbose: $v, test: $test, source_checksums=$source_checksums destination_checksums=$destination_checksums progress_file=$progress_file skip=$skip";
 file_number=0;
 
 while read -r line
 do
+
+    if [ $file_number -lt $skip ]; then
+        if [ "$v" = "y" ]; then
+            echo "skipping $file_number: $file"; 
+        fi
+
+        let file_number=$file_number+1;
+        continue;
+    fi
 
     if [ $(($file_number % 1000)) == 0 ]; then
         date=$(date);
@@ -88,13 +101,13 @@ do
     file=$(echo "$line" | awk '{print $2}');
     
     if result=$(grep "$checksum" "$destination_checksums"); then
-        echo "$checksum exists" >> "$progress_file"
+        echo -e "$checksum exists\t\t$file" >> "$progress_file"
         if [ "$v" = "y" ]; then
             file_found=$(echo $result | awk '{print $2}');
             echo "$file_number: $checksum of $file exists in $file_found";
         fi
     else
-        echo "$checksum MISSING" >> "$progress_file"
+        echo -e "$checksum MISSING\t$file" >> "$progress_file"
         >&2 echo "$file_number: $checksum of $file is MISSING"
     fi
 
